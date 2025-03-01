@@ -1,22 +1,14 @@
 
 package com.spotify.oauth2.pojo;
 
-import javax.annotation.Generated;
+//import javax.annotation.Generated;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.spotify.oauth2.pojo.ExternalUrls__1;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-    "display_name",
-    "external_urls",
-    "href",
-    "id",
-    "type",
-    "uri"
-})
-@Generated("jsonschema2pojo")
+
 public class Owner {
 
     @JsonProperty("display_name")

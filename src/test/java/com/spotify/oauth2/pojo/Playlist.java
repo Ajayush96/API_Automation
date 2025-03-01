@@ -1,30 +1,12 @@
 
 package com.spotify.oauth2.pojo;
 
-import javax.annotation.Generated;
+//import javax.annotation.Generated;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-    "collaborative",
-    "description",
-    "external_urls",
-    "followers",
-    "href",
-    "id",
-    "images",
-    "name",
-    "owner",
-    "primary_color",
-    "public",
-    "snapshot_id",
-    "tracks",
-    "type",
-    "uri"
-})
-@Generated("jsonschema2pojo")
 public class Playlist {
 
     @JsonProperty("collaborative")
@@ -74,8 +56,9 @@ public class Playlist {
     }
 
     @JsonProperty("description")
-    public void setDescription(String description) {
+    public Playlist setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     @JsonProperty("external_urls")
@@ -134,8 +117,9 @@ public class Playlist {
     }
 
     @JsonProperty("name")
-    public void setName(String name) {
+    public Playlist setName(String name) {
         this.name = name;
+        return this;
     }
 
     @JsonProperty("owner")
@@ -164,8 +148,9 @@ public class Playlist {
     }
 
     @JsonProperty("public")
-    public void setPublic(Boolean _public) {
+    public Playlist setPublic(Boolean _public) {
         this._public = _public;
+        return this;
     }
 
     @JsonProperty("snapshot_id")

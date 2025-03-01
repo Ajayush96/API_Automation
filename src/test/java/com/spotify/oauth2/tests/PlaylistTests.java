@@ -1,112 +1,101 @@
 package com.spotify.oauth2.tests;
 
+import com.spotify.oauth2.api.StatusCode;
+import com.spotify.oauth2.api.applicationApi.PlaylistApi;
+import com.spotify.oauth2.pojo.Error;
+import com.spotify.oauth2.pojo.Playlist;
+import com.spotify.oauth2.utils.DataLoader;
+import io.qameta.allure.*;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.FileNotFoundException;
+
+import static com.spotify.oauth2.api.SpecBuilder.getRequestSpec;
+import static com.spotify.oauth2.api.SpecBuilder.getResponseSpec;
+import static com.spotify.oauth2.utils.FakerUtils.generateDescription;
+import static com.spotify.oauth2.utils.FakerUtils.generateName;
 import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.responseSpecification;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class PlaylistTests {
-
-    RequestSpecification requestSpecification;
-    ResponseSpecification responseSpecification;
-    String Access_Token = "    \"access_token\": \"BQC35xSyoWnOLjbz9BuVIFaR0h3YzFS-EHg77W0WIijI_v_10wdGM4VqM8jBpi0fUKIpswhQJj3m5E5zWq_v2-Ehfch6mQHT-SP3txiviVPq8lSeAh5ymTRsUm7kVk34o-5MrucASA3Gej1Pd7tfXVt6KjvXP_ye6eXW" +
-            "jhZT2ShRZieqLp6W1xbmqRauBphz_sik3av3HnVaL_wcxAPEOsTrUxfmOlH7aK6EZkaqraUNff_9J5vQALMeCGmcPBMbzy7C7of2VS-HIkqwxbMlU4F2\",\n";
-
-    @BeforeClass
-    public void beforeClass() {
-        RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder().
-                setBaseUri("https://api.spotify.com").
-                setBasePath("/v1").
-                addHeader("Authorization", "Bearer " + Access_Token).
-                setContentType(ContentType.JSON).
-                log(LogDetail.ALL);
-
-        RestAssured.requestSpecification = requestSpecBuilder.build();
-
-        ResponseSpecBuilder responseSpecBuilder = new ResponseSpecBuilder().
-                //  expectContentType(ContentType.JSON).
-                        log(LogDetail.ALL);
-        responseSpecification = responseSpecBuilder.build();
+@Epic("Spotify Oauth 2.0")
+@Feature("Playlist Api")
+public class PlaylistTests extends BaseTest{
+   @Step
+    public Playlist playlistBuilder(String name, String description , boolean _public)
+    {
+        return new Playlist().setName(name).setDescription(description).setPublic(_public);
     }
-
-    @Test
-    public void ShouldBeAbleToCreateAPlaylist() {
-        String Payload = "{\n" +
-                "    \"name\": \"New Playlist\",\n" +
-                "    \"description\": \"New playlist description\",\n" +
-                "    \"public\": false\n" +
-                "}";
-        given().
-                body(Payload).
-                when().
-                post("/users/31bhfxyjefb6djj4sjxts5krngjq/playlists")
-                .then().spec(responseSpecification).assertThat().statusCode(201).body("name", equalTo("New Playlist"),
-                        "description", equalTo("New playlist description"),
-                        "public", equalTo(false));
+    @Step
+    public void assertPlaylistEquql(Playlist requestPlaylist , Playlist responsePlaylist )
+    {
+        assertThat(responsePlaylist.getName(), equalTo(requestPlaylist.getName()));
+        assertThat(responsePlaylist.getDescription(), equalTo(requestPlaylist.getDescription()));
+        assertThat(responsePlaylist.getPublic(), equalTo(requestPlaylist.getPublic()));
     }
+    @Story("Create a playlist story")
+    @Link("https://example.org")
+    @Link(name= "allure", type = "mylink")
+    @TmsLink("12345")
+    @Issue("1234567")
+    @Description("This is the description")
+    @Test(description = "Should Be Able To Create APlaylist")
+    public void ShouldBeAbleToCreateAPlaylist() throws FileNotFoundException {
 
-    @Test
-    public void ShouldBeAbleToGetAPlaylist() {
-        given().
-                when().
-                get("/playlists/6RAAYheMgyb7EP2y5nH9M8")
-                .then().spec(responseSpecification).assertThat().statusCode(200).body("name", equalTo("Updated Playlist Name"),
-                        "description", equalTo("Updated playlist description"),
-                        "public", equalTo(true));
+        Playlist requestPlaylist= playlistBuilder(generateName(),generateDescription(), false);
+        Response response = PlaylistApi.post(requestPlaylist);
+        assertThat(response.statusCode(), equalTo(StatusCode.CODE_201.getCode()));
+        Playlist responsePlaylist = response.as(Playlist.class);
+        assertPlaylistEquql(requestPlaylist,responsePlaylist);
+
     }
-
-    @Test
-    public void ShouldBeAbleToPutAPlaylist() {
-        String Payload = "{\n" +
-                "    \"name\": \"Updated Playlist Name\",\n" +
-                "    \"description\": \"Updated playlist description\",\n" +
-                "    \"public\": false\n" +
-                "}";
-        given().
-                body(Payload).
-                when().
-                put("/playlists/6RAAYheMgyb7EP2y5nH9M8")
-                .then().spec(responseSpecification).assertThat().statusCode(200);
+    @Story("Create a playlist story")
+    @Test(description ="Should Be Able To Get A Playlist" )
+    public void ShouldBeAbleToGetAPlaylist() throws FileNotFoundException {
+        Playlist requestPlaylist= playlistBuilder("Updated Playlist Name","Updated playlist description", true);
+        Response response = PlaylistApi.get(DataLoader.getInstance().getGetPlaylistId());
+        assertThat(response.statusCode(), equalTo(StatusCode.CODE_200.getCode()));
+        Playlist responsePlaylist = response.as(Playlist.class);
+        assertPlaylistEquql(requestPlaylist,responsePlaylist);
     }
+    @Story("Create a playlist story")
+    @Test(description = "Should Be Able To Put A Playlist")
+    public void ShouldBeAbleToPutAPlaylist() throws FileNotFoundException {
+        Playlist requestPlaylist= playlistBuilder(generateName(),generateDescription(),false);
 
-    @Test
-    public void ShouldNotBeAbleToCreateAPlaylist() {
-        String Payload = "{\n" +
-                "    \"name\": \"\",\n" +
-                "    \"description\": \"New playlist description\",\n" +
-                "    \"public\": false\n" +
-                "}";
-        given().
-                body(Payload).
-                when().
-                post("/users/31bhfxyjefb6djj4sjxts5krngjq/playlists")
-                .then().spec(responseSpecification).assertThat().statusCode(400);
+        Response response = PlaylistApi.update(DataLoader.getInstance().getUpdatePlaylistId(), requestPlaylist);
+        assertThat(response.statusCode(), equalTo(StatusCode.CODE_200.getCode()));
     }
-
-    @Test
-    public void ShouldNotBeAbleToCreateAPlaylistWithExpiredToken() {
-        String Payload = "{\n" +
-                "    \"name\": \"New Playlist\",\n" +
-                "    \"description\": \"New playlist description\",\n" +
-                "    \"public\": false\n" +
-                "}";
-        given().baseUri("https://api.spotify.com").
-                basePath("/v1").
-                header("Authorization", "Bearer " + "12345").
-                contentType(ContentType.JSON).
-                log().all().
-                body(Payload).
-                when().
-                post("/users/31bhfxyjefb6djj4sjxts5krngjq/playlists")
-                .then().spec(responseSpecification).assertThat().statusCode(401);
+    @Story("Create a playlist story")
+    @Test(description = "Should Not Be Able To Create A Playlist")
+    public void ShouldNotBeAbleToCreateAPlaylist() throws FileNotFoundException {
+        Playlist requestPlaylist= playlistBuilder("",generateDescription(),false);
+        Response response = PlaylistApi.post(requestPlaylist);
+        assertThat(response.statusCode(), equalTo(StatusCode.CODE_400.getCode()));
+        Error error = response.as(Error.class);
+        assertThat(error.getError().getStatus(),equalTo(StatusCode.CODE_400.getCode()));
+        assertThat(error.getError().getMessage(),equalTo(StatusCode.CODE_400.getMsg()));
+    }
+    @Story("Create a playlist story")
+    @Test(description ="Should Not Be Able To Create A Playlist With ExpiredToken" )
+    public void ShouldNotBeAbleToCreateAPlaylistWithExpiredToken() throws FileNotFoundException {
+        String invalid_Token="1234";
+        Playlist requestPlaylist1= playlistBuilder(generateName(),generateDescription(), false);
+        Response response = PlaylistApi.post(invalid_Token, requestPlaylist1);
+        assertThat(response.statusCode(), equalTo(StatusCode.CODE_401.getCode()));
+        Error error = response.as(Error.class);
+        assertThat(error.getError().getStatus(),equalTo(StatusCode.CODE_401.getCode()));
+        assertThat(error.getError().getMessage(),equalTo(StatusCode.CODE_401.getMsg()));
     }
 
 
